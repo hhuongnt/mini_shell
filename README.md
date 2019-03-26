@@ -1,2 +1,2 @@
 # mini_shell
-Implement of shell bash
+Implement of bash
