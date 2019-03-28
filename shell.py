@@ -1,5 +1,5 @@
 #!usr/bin/env python3
-from os import getenv, chdir
+from os import getenv, chdir, environ, unsetenv
 from os.path import isfile, isdir
 
 
@@ -26,13 +26,14 @@ def back_to_home_directory():
 def execute_cd(command_line):
 	"""
 	Built-ins command 'cd'
+	cd [directory]
 	"""
 
 	# if command line is only 'cd'
 	if len(command_line) == 1:
 		back_to_home_directory()
 
-	# execute command cd + directory
+	# execute command cd [directory]
 	else:
 		directory = command_line[1]
 
@@ -52,13 +53,15 @@ def execute_cd(command_line):
 def execute_printenv(command_line):
 	"""
 	Built-ins command 'printenv'
+	printenv [variable]
 	"""
 
 	# if no variable is input
 	if len(command_line) == 1:
-		pass
+		for key in environ:
+			print (key + '=' + environ[key])
 
-	# execute command printenv
+	# execute command printenv [variable]
 	else:
 		variable = command_line[1]
 		variable_env = getenv(variable)
@@ -75,13 +78,14 @@ def execute_printenv(command_line):
 def execute_export(command_line):
 	"""
 	Built-ins command 'export'
+	export [variable=environment]
 	"""
 
 	# if no variable is input
 	if len(command_line) == 1:
 		pass
 
-	# execute command export
+	# execute command export [variable=environment]
 	else:
 		argument = command_line[1].split('=')
 
@@ -93,24 +97,53 @@ def execute_export(command_line):
 		else:
 			variable = argument[0]
 			environment = argument[1]
-			# set the env to variable
+			eviron[variable] = environment
 
 
 def execute_unset(command_line):
 	"""
 	Built-ins command 'unset'
+	unset [variable]
 	"""
 
 	# if no variable is input
 	if len(command_line) == 1:
 		pass
 
-	# execute command unset
+	# execute command unset [variable]
 	else:
-		variable = command_line[1]
-		# unset the variable
+		try:
+			variable = command_line[1]
+			del environ[variable]
+		except KeyError:
+			pass
 
 
+def execute_exit(command_line, flag):
+	"""
+	Built-ins command 'exit'
+	exit [exit_code]
+	"""
+
+	# if too many arguments input
+	if len(command_line) > 3:
+		print ('bash: exit: too many arguments')
+
+	# execute command exit [exit_code]
+	else:
+		argument = command_line[1]
+
+		# if argument is a string
+		if type(argument) == str:
+			print ('bash: exit: argument is a string')
+
+		# exit the bash shell
+		else:
+			flag = True
+	return flag
+
+def main():
+	
 while 1:
 	command_line = break_commandline()
-	execute_cd(command_line)
+	execute_unset(command_line)
