@@ -1,26 +1,38 @@
 #!usr/bin/env python3
-from os import getenv, chdir, environ, unsetenv
+from os import getenv, chdir, environ, unsetenv, getcwd
 from os.path import isfile, isdir
 
 
 def break_commandline():
 	"""
-	Break command line down into components and contain in list
+	Break command line down into components and contain in list.
 	@ parameters:
-	1. list[0]: command
-	2. list[1]: arguments
+	1. list[0]: command.
+	2. list[1]: arguments.
 	"""
 	user_input = input()
-	command_line = user_input.split(' ')
+	command_line = set(user_input.split(' '))
 	return command_line
 
 
 def back_to_home_directory():
 	"""
-	Change current working directory to home directory
+	Change current working directory to home directory.
 	"""
 	home_dir = getenv("HOME")
 	chdir(home_dir)
+
+
+def is_string(argument):
+	"""
+	Check if argument is a string or a number.
+	If string -> return True else return False.
+	"""
+	num = '123456789'
+	for i in argument:
+		if i not in num:
+			return True
+	return False
 
 
 def execute_cd(command_line):
@@ -39,7 +51,7 @@ def execute_cd(command_line):
 
 		# if arguments is a file
 		if isfile(directory):
-			print ("cd: " + directory + ": Not a directory")
+			print ("intek-sh$: cd: " + directory + ": Not a directory")
 
 		# if argument is a directory
 		elif isdir(directory):
@@ -47,7 +59,12 @@ def execute_cd(command_line):
 
 		# if argument not exists
 		else:
-			print ("cd: " + directory + ": No such file or directory")
+			print ("intek-sh$: cd: " + directory + ": No such file or directory")
+
+
+def execute_pwd(command_line):
+	current_directory = getcwd()
+	print (current_directory)
 
 
 def execute_printenv(command_line):
@@ -97,7 +114,7 @@ def execute_export(command_line):
 		else:
 			variable = argument[0]
 			environment = argument[1]
-			eviron[variable] = environment
+			environ[variable] = environment
 
 
 def execute_unset(command_line):
@@ -126,24 +143,52 @@ def execute_exit(command_line, flag):
 	"""
 
 	# if too many arguments input
-	if len(command_line) > 3:
-		print ('bash: exit: too many arguments')
+	if len(command_line) > 2:
+		print ('intek-sh$: exit: too many arguments')
 
 	# execute command exit [exit_code]
+	elif len(command_line) == 1:
+		print ('exit')
+		flag = True
 	else:
 		argument = command_line[1]
 
 		# if argument is a string
-		if type(argument) == str:
-			print ('bash: exit: argument is a string')
+		if is_string(argument):
+			print ('intek-sh$: exit: ' + argument + ': numeric argument required')
 
-		# exit the bash shell
+		# if argument is [exit_code]: change flag -> True to end while loop
 		else:
+			print ('exit')
 			flag = True
 	return flag
 
+
 def main():
-	
-while 1:
-	command_line = break_commandline()
-	execute_unset(command_line)
+	flag = False
+	while flag == False:
+		print ('intek-sh$ ', end='')
+		command_line = break_commandline()
+		if len(command_line) > 0:
+
+			# code here pls
+			command = command_line[0]
+			if command == 'pwd':
+				execute_pwd(command_line)
+			elif command == 'cd':
+				execute_cd(command_line)
+			elif command == 'printenv':
+				execute_printenv(command_line)
+			elif command == 'export':
+				execute_export(command_line)
+			elif command == 'unset':
+				execute_unset(command_line)
+			elif command == 'exit':
+				flag = execute_exit(command_line, flag)
+			else:
+				print ('intek-sh$: ' + command + ': command not found')
+		else:
+			pass
+
+
+main()
