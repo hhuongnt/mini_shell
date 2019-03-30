@@ -11,7 +11,7 @@ def break_commandline():
 	2. list[1]: arguments.
 	"""
 	user_input = input()
-	command_line = set(user_input.split(' '))
+	command_line = user_input.split()
 	return command_line
 
 
@@ -20,19 +20,10 @@ def back_to_home_directory():
 	Change current working directory to home directory.
 	"""
 	home_dir = getenv("HOME")
-	chdir(home_dir)
-
-
-def is_string(argument):
-	"""
-	Check if argument is a string or a number.
-	If string -> return True else return False.
-	"""
-	num = '123456789'
-	for i in argument:
-		if i not in num:
-			return True
-	return False
+	if home_dir is None:
+		print('intek-sh$: cd: HOME not set')
+	else:
+		chdir(home_dir)
 
 
 def execute_cd(command_line):
@@ -41,30 +32,36 @@ def execute_cd(command_line):
 	cd [directory]
 	"""
 
-	# if command line is only 'cd'
-	if len(command_line) == 1:
-		back_to_home_directory()
+	try:
 
-	# execute command cd [directory]
-	else:
-		directory = command_line[1]
+		# if command line is only 'cd'
+		if len(command_line) == 1:
+			back_to_home_directory()
 
-		# if arguments is a file
-		if isfile(directory):
-			print ("intek-sh$: cd: " + directory + ": Not a directory")
-
-		# if argument is a directory
-		elif isdir(directory):
-			chdir(directory)
-
-		# if argument not exists
+		# execute command cd [directory]
 		else:
-			print ("intek-sh$: cd: " + directory + ": No such file or directory")
+			directory = command_line[1]
 
+			# if arguments is a file
+			if isfile(directory):
+				print ("intek-sh$: cd: " + directory + ": Not a directory")
+
+			# if argument is a directory
+			elif isdir(directory):
+				chdir(directory)
+
+			# if argument not exists
+			else:
+				print ("intek-sh$: cd: " + directory + ": No such file or directory")
+	except EOFError:
+		pass
 
 def execute_pwd(command_line):
-	current_directory = getcwd()
-	print (current_directory)
+	try:
+		current_directory = getcwd()
+		print(current_directory)
+	except EOFError:
+		pass
 
 
 def execute_printenv(command_line):
@@ -73,23 +70,27 @@ def execute_printenv(command_line):
 	printenv [variable]
 	"""
 
-	# if no variable is input
-	if len(command_line) == 1:
-		for key in environ:
-			print (key + '=' + environ[key])
+	try:
 
-	# execute command printenv [variable]
-	else:
-		variable = command_line[1]
-		variable_env = getenv(variable)
+		# if no variable is input
+		if len(command_line) == 1:
+			for key in environ:
+				print(key + '=' + environ[key])
 
-		# if the environment of variable is not set
-		if variable_env == None:
-			pass
-
-		# print variable environment
+		# execute command printenv [variable]
 		else:
-			print (variable_env)
+			variable = command_line[1]
+			variable_env = getenv(variable)
+
+			# if the environment of variable is not set
+			if variable_env is None:
+				pass
+
+			# print variable environment
+			else:
+				print(variable_env)
+	except EOFError:
+		pass
 
 
 def execute_export(command_line):
@@ -98,23 +99,27 @@ def execute_export(command_line):
 	export [variable=environment]
 	"""
 
-	# if no variable is input
-	if len(command_line) == 1:
-		pass
+	try:
 
-	# execute command export [variable=environment]
-	else:
-		argument = command_line[1].split('=')
-
-		# if environment is not input to variable
-		if len(argument) == 1:
+		# if no variable is input
+		if len(command_line) == 1:
 			pass
 
-		# set the environment for variable
+		# execute command export [variable=environment]
 		else:
-			variable = argument[0]
-			environment = argument[1]
-			environ[variable] = environment
+			argument = command_line[1].split('=')
+
+			# if environment is not input to variable
+			if len(argument) == 1:
+				pass
+
+			# set the environment for variable
+			else:
+				variable = argument[0]
+				environment = argument[1]
+				environ[variable] = environment
+	except EOFError:
+		pass
 
 
 def execute_unset(command_line):
@@ -123,17 +128,21 @@ def execute_unset(command_line):
 	unset [variable]
 	"""
 
-	# if no variable is input
-	if len(command_line) == 1:
-		pass
+	try:
 
-	# execute command unset [variable]
-	else:
-		try:
-			variable = command_line[1]
-			del environ[variable]
-		except KeyError:
+		# if no variable is input
+		if len(command_line) == 1:
 			pass
+
+		# execute command unset [variable]
+		else:
+			try:
+				variable = command_line[1]
+				del environ[variable]
+			except KeyError:
+				pass
+	except EOFError:
+		pass
 
 
 def execute_exit(command_line, flag):
@@ -142,36 +151,40 @@ def execute_exit(command_line, flag):
 	exit [exit_code]
 	"""
 
-	# if too many arguments input
-	if len(command_line) > 2:
-		print ('intek-sh$: exit: too many arguments')
+	try:
 
-	# execute command exit [exit_code]
-	elif len(command_line) == 1:
-		print ('exit')
-		flag = True
-	else:
-		argument = command_line[1]
+		# if too many arguments input
+		if len(command_line) > 2:
+			print ('intek-sh$: exit: too many arguments')
 
-		# if argument is a string
-		if is_string(argument):
-			print ('intek-sh$: exit: ' + argument + ': numeric argument required')
-
-		# if argument is [exit_code]: change flag -> True to end while loop
-		else:
+		# if no exit_code is input
+		elif len(command_line) == 1:
 			print ('exit')
-			flag = True
-	return flag
+			flag = False
+
+		# exit with exit_code
+		else:
+			argument = command_line[1]
+
+			# if argument is a numeric string
+			if argument.isdigit():
+				print('exit')
+
+			# if argument is a string
+			else:
+				print('intek-sh$: exit: ' + argument + ': numeric argument required')
+			flag = False
+		return flag
+	except EOFError:
+		pass
 
 
 def main():
-	flag = False
-	while flag == False:
-		print ('intek-sh$ ', end='')
+	flag = True
+	while flag:
+		print('intek-sh$ ', end='')
 		command_line = break_commandline()
 		if len(command_line) > 0:
-
-			# code here pls
 			command = command_line[0]
 			if command == 'pwd':
 				execute_pwd(command_line)
@@ -186,7 +199,7 @@ def main():
 			elif command == 'exit':
 				flag = execute_exit(command_line, flag)
 			else:
-				print ('intek-sh$: ' + command + ': command not found')
+				print('intek-sh$: ' + command + ': command not found')
 		else:
 			pass
 
