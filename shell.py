@@ -1,7 +1,7 @@
 #!usr/bin/env python3
 from os import getenv, chdir, environ, unsetenv, getcwd
-from os.path import isfile, isdir
-
+from os.path import isfile, isdir, abspath
+from path_expansions import handle_tilde_expansion
 
 def break_commandline():
 	"""
@@ -26,6 +26,12 @@ def back_to_home_directory():
 		chdir(home_dir)
 
 
+def update_pwd(directory):
+	current_directory = getcwd()
+	environ['OLDPWD'] = current_directory
+	environ['PWD'] = directory
+
+
 def execute_cd(command_line):
 	"""
 	Built-ins command 'cd'
@@ -36,11 +42,13 @@ def execute_cd(command_line):
 
 		# if command line is only 'cd'
 		if len(command_line) == 1:
+			update_pwd(getenv("HOME"))
 			back_to_home_directory()
 
 		# execute command cd [directory]
 		else:
 			directory = command_line[1]
+			directory = handle_tilde_expansion(directory)
 
 			# if arguments is a file
 			if isfile(directory):
@@ -48,6 +56,7 @@ def execute_cd(command_line):
 
 			# if argument is a directory
 			elif isdir(directory):
+				update_pwd(abspath(directory))
 				chdir(directory)
 
 			# if argument not exists
