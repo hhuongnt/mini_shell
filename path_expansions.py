@@ -43,6 +43,9 @@ def handle_tilde_expansion(dest_path):
 
 
 def create_dict(command_line, dict):
+	"""
+	Add the value of the variable as key and value to the dict
+	"""
 	if '=' in command_line:
 		for i in range(len(command_line)):
 			if command_line[i] == '=':
@@ -68,19 +71,20 @@ def handle_parameter_expansion(dest_path, dict):
 			# handle braces '{}'
 			if dest_path[1] == '{':
 				var = ''
+				dest_path = dest_path[2:]
 
 				# trace the variable in the braces
-				for char in dest_path[2:]:
+				for i, char in enumerate(dest_path):
 					if char == '}':
 						break
 					var += char
 
 				# if variable is already set
 				if var in dict.keys():
-					return dict[var]
+					return dict[var] + dest_path[i+1:]
 
 				# if variable is not set
-				return ''
+				return dest_path[i+1:]
 
 			# without braces '{}'
 			else:
@@ -103,6 +107,5 @@ def main():
 		command_line = input()
 		if command_line[0] != '$':
 			dict = create_dict(command_line, dict)
-		else:
-			print(handle_parameter_expansion(command_line, dict))
+		print(handle_parameter_expansion(command_line, dict))
 main()
